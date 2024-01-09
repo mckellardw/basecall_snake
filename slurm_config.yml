@@ -1,0 +1,18 @@
+# slurm_config.yml - cluster configuration
+__default__:
+    job-name: basecall
+    mail-type: END,FAIL
+    mail-user: dmckellar@nygenome.org
+    partition: pe2
+    time: 00-1:00:00 # time limit for each job
+    nodes: 1
+    ntasks-per-node: 8 #Request n cores be allocated per node.
+    mem: 32G
+    output: slurm_log/smk_%j.log
+    chdir: /gpfs/commons/groups/innovation/dwm/basecall_snake
+
+basecall_DORADO:
+    partition: gpu
+    time: 00-8:00:00
+    mem: 16G
+    gres: gpu:1
