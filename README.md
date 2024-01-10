@@ -1,6 +1,5 @@
 
 # Install/dependencies:
-#TODO- add snakemake v8 compatibility
 ```
 dorado==0.5.1
 snakemake==7.X.X
@@ -8,17 +7,19 @@ samtools
 ```
 
 # Runtime:
+Pre-run:
 ```
 cd /gpfs/commons/groups/innovation/dwm/basecall_snake
+module load samtools
 module load dorado
-module load guppy/6.1.2-gpu
-module load cuda/11.3.1
 ```
+<!-- module load guppy/6.1.2-gpu
+module load cuda/11.3.1 -->
 
 ## Run w/ slurm:
 ```
 snakemake --cluster-config slurm_config.yml \
---cluster "sbatch --mail-type {cluster.mail-type} --mail-user {cluster.mail-user} -p {cluster.partition} -t {cluster.time} -N {cluster.nodes} --mem {cluster.mem} -D {cluster.chdir} --gres=gpu:1" \
+--cluster "sbatch --mail-type {cluster.mail-type} --mail-user {cluster.mail-user} -p {cluster.partition} -t {cluster.time} -N {cluster.nodes} --mem {cluster.mem} -D {cluster.chdir} --output={cluster.output} --gres=gpu:1" \
 -j 8
 ```
 
@@ -28,74 +29,19 @@ snakemake --nt -k -j 2
 ```
 
 # Additional detiails:
-## Dorado models
-List of all models on cluster:
+## Dorado models:
+[link to info from ONT](TODO)
+How to download:
 ```
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.3_450bps_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5hmc_5mc_cg_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.3_450bps_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5hmc_5mc_cg_hac_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.3_450bps_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5hmc_5mc_cg_sup.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.3_450bps_hac_prom.cfg
- /nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5hmc_5mc_cg_sup_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.3_450bps_sup.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5mc_cg_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5mc_cg_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5mc_cg_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5mc_cg_hac_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_hac_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5mc_cg_sup.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5hmc_5mc_cg_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5mc_cg_sup_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5hmc_5mc_cg_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_sketch.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5hmc_5mc_cg_hac.cfg
-
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_sup.cfg
-
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5hmc_5mc_cg_hac_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_sup_plant.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5hmc_5mc_cg_sup.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_sup_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5mc_cg_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5mc_cg_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5mc_cg_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5mc_cg_hac_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_hac_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_modbases_5mc_cg_sup.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_modbases_5mc_cg_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_sketch.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_modbases_5mc_cg_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10.4_e8.1_sup.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_modbases_5mc_cg_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10_450bps_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_modbases_5mc_cg_hac_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r10_450bps_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_modbases_5mc_cg_sup.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_sketch.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_e8.1_sup.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.5_450bps.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_hac_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/rna_r9.4.1_70bps_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_hac_prom_fw205.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/rna_r9.4.1_70bps_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5hmc_5mc_cg_fast.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/rna_r9.4.1_70bps_hac.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/dna_r9.4.1_450bps_modbases_5hmc_5mc_cg_fast_prom.cfg
-/nfs/sw/guppy/guppy-6.1.2-gpu/data/rna_r9.4.1_70bps_hac_prom.cfg
+cd basecall_snake/
+dorado download --directory resources/dorado models
 ```
 
-## Output tree:
+## Guppy models:
+- Location of all models on cluster:  
+    `/nfs/sw/guppy/guppy-6.1.2-gpu/data/`
+
+## Output tree (#TODO):
 ```
 {OUTDIR}
     {sample}
@@ -106,3 +52,13 @@ List of all models on cluster:
             hac
                 unaligned.bam
 ```
+
+# TODO:
+- add snakemake v8 compatibility
+- Fix slurm resource settings for `list_sample_runs`
+- snakemake --lint
+- Autodetect chemistry?
+- Add other basecallers
+- README
+  - output tree
+  - model info
