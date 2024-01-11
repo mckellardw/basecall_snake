@@ -1,15 +1,17 @@
 # run basecallling
 rule basecall_GUPPY:
     input:
-        DIR = "{OUTDIR}/{EXPT_SAMPLE}",
-        POD5_DIRS = glob.glob("{IN_DIR}/{EXPT_SAMPLE}/*/pod5_pass")
+        DIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
+        POD5_DIRS = glob.glob("{IN_DIR}/{EXPT}/{SAMPLE}/*/pod5_pass")
     output:
         # DIR = directory("{OUTDIR}/{EXPT_SAMPLE}/guppy"),
-        POD5_LIST = "{OUTDIR}/{EXPT_SAMPLE}/guppy/{MODEL}/pod5_list.txt"
+        POD5_LIST = "{OUTDIR}/{EXPT}/{SAMPLE}/guppy/{MODEL}/pod5_list.txt"
         # BAM = "{OUTDIR}/{EXPT_SAMPLE}/guppy/{MODEL}/unaligned.bam"
     wildcard_constraints:
         EXPT_SAMPLE=EXPT_SAMPLE_REGEX,
-        MODEL=MODEL_REGEX
+        MODEL=MODEL_REGEX,
+        IN_DIR=IN_DIR,
+        OUTDIR=OUTDIR
     params:
         MIN_Q_SCORE=8
     run:

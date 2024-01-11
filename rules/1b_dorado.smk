@@ -18,11 +18,11 @@
 #TODO- add a check for input pod5 files/dirs
 rule basecall_DORADO:
     input:        
-        DIR = "{OUTDIR}/{EXPT_SAMPLE}",
-        POD5_DIRS = glob.glob("{IN_DIR}/{EXPT_SAMPLE}/*/pod5_pass".replace(" ",""))
+        DIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
+        POD5_DIRS = lambda wildcards: POD5_DIRS[f"{wildcards.EXPT}/{wildcards.SAMPLE}".replace(" ","")]
     output:
-        BAM = "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/unaligned.bam",
-        POD5_LIST = "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/pod5_list.txt"
+        BAM = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/unaligned.bam",
+        POD5_LIST = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/pod5_list.txt"
     params:
         MIN_Q_SCORE=8,
         # MODELS = MODELS_DICT.keys(),
@@ -30,11 +30,13 @@ rule basecall_DORADO:
         # CUDA_DEVICE = "cpu"
     wildcard_constraints:
         EXPT_SAMPLE = EXPT_SAMPLE_REGEX,
-        MODEL=MODEL_REGEX
+        MODEL=MODEL_REGEX,
+        IN_DIR=IN_DIR,
+        OUTDIR=OUTDIR
     log:
-        "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/basecaller.log"
+        "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/basecaller.log"
     benchmark:
-        "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/basecaller_benchmark.txt"
+        "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/basecaller_benchmark.txt"
     run:
         tmpdir = f"{input.DIR}/dorado/{wildcards.MODEL}/tmp".replace(" ", "")
 
@@ -53,7 +55,7 @@ rule basecall_DORADO:
             shell(
                 f"""
                 touch {output.POD5_LIST}
-                echo {glob.glob(f"{IN_DIR}/{wildcards.EXPT_SAMPLE}/*/pod5_pass/*.pod5")} >> {output.POD5_LIST}
+                echo {input.POD5_DIRS} >> {output.POD5_LIST}
 
                 {EXEC['DORADO']} basecaller \
                     --recursive \

@@ -15,6 +15,7 @@ configfile:'config.yaml'
 import glob
 import os
 import re
+import itertools
 
 ########################################################################################################
 # Directories and run settings
@@ -33,7 +34,13 @@ EXPTS = config['EXPTS']
 
 EXPT_SAMPLE_LIST=[f"{EXPT}/{SAMPLE}".replace(" ","") for EXPT, SAMPLES in EXPTS.items() for SAMPLE in SAMPLES]
 
-EXPT_SAMPLE_REGEX=r'^[-\w]+\/[-\w]+$'
+POD5_DIRS = {}
+POD5_FILES = {}
+for ES in EXPT_SAMPLE_LIST:
+    POD5_DIRS[ES]  = glob.glob(f"{IN_DIR}/{ES}/*/pod5_pass".replace(" ",""))
+    POD5_FILES[ES] = glob.glob(f"{IN_DIR}/{ES}/*/pod5_pass/*.pod5".replace(" ",""))
+
+EXPT_SAMPLE_REGEX=r"^E[\d]+\/[-\w]+$"
 MODEL_REGEX=r"sup"
 
 ########################################################################################################
@@ -49,6 +56,14 @@ EXEC = config['EXEC']
 # for ES in EXPT_SAMPLE_LIST:
 #     print(f">>>> {ES}")
 #     print(glob.glob(f"{IN_DIR}/{ES}/*/pod5_pass/".replace(" ","")))
+
+# for ES in EXPT_SAMPLE_LIST:
+#     print(ES)
+#     print(
+#         re.search(EXPT_SAMPLE_REGEX, ES)
+#     )
+
+# print([f"{OUTDIR}/{e}/{s}".replace(" ","") for e in EXPTS for s in EXPTS[e]])
 
 # print(
 #     expand( # Dorado unaligned .bam outputs
@@ -88,48 +103,56 @@ rule all:
             EXPT_SAMPLE = EXPT_SAMPLE_LIST,
             MODEL = MODELS_DICT.keys(),
             FILES = ['unaligned.bam','pod5_list.txt']
-        ),        
-        expand( # Guppy outputs [PLACEHOLDER]
-            "{OUTDIR}/{EXPT_SAMPLE}/guppy/{MODEL}/{FILES}",
-            OUTDIR = config['OUTDIR'],
-            EXPT_SAMPLE = EXPT_SAMPLE_LIST,
-            MODEL = MODELS_DICT.keys(),
-            FILES = ['pod5_list.txt']
-        ), 
-        expand( # sample run info
-            "{OUTDIR}/{EXPT_SAMPLE}/runs.txt",
-            OUTDIR = config['OUTDIR'],
-            EXPT_SAMPLE = EXPT_SAMPLE_LIST
-        )
+        ),
+        # expand( # Guppy outputs [PLACEHOLDER]
+        #     "{OUTDIR}/{EXPT_SAMPLE}/guppy/{MODEL}/{FILES}",
+        #     OUTDIR = config['OUTDIR'],
+        #     EXPT_SAMPLE = EXPT_SAMPLE_LIST,
+        #     MODEL = MODELS_DICT.keys(),
+        #     FILES = ['pod5_list.txt']
+        # ), 
+        [ # sample run info
+            f"{OUTDIR}/{e}/{s}/pod5.txt".replace(" ","") for e in EXPTS for s in EXPTS[e]
+        ]
+    # wildcard_constraints:
+    #     EXPT_SAMPLE = EXPT_SAMPLE_REGEX,
+    #     OUTDIR=OUTDIR
 
 # Initialize sample output directories
-rule build_sample_dirs:
-    output:
-        DIR = directory("{OUTDIR}/{EXPT_SAMPLE}")
-    wildcard_constraints:
-        EXPT_SAMPLE = EXPT_SAMPLE_REGEX
-    run:
-        #Build outdirs for each sample, based on ONT input file structure (`.../EXPT/SAMPLE`)
-        shell(
-            f"""
-            mkdir -p {output.DIR}
-            """
-        )
+# rule build_sample_dirs:
+#     output:
+#         DIR = directory("{OUTDIR}/{EXPT}/{SAMPLE}")
+#     # wildcard_constraints:
+#     #     EXPT_SAMPLE = EXPT_SAMPLE_REGEX,
+#     #     OUTDIR=OUTDIR
+#     run:
+#         #Build outdirs for each sample, based on ONT input file structure (`.../EXPT/SAMPLE`)
+#         shell(
+#             f"""
+#             mkdir -p {output.DIR}
+#             """
+#         )
+
 # Write .pod5 file list used for each sample
 rule list_sample_runs:
     input:
-        POD5_FILES = glob.glob("{IN_DIR}/{EXPT_SAMPLE}/*/pod5_pass/*.pod5".replace(" ",""))
+        # DIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
+        POD5_LIST = lambda wildcards: POD5_FILES[f"{wildcards.EXPT}/{wildcards.SAMPLE}".replace(" ","")]
     output:
-        SAMPLE_RUNS = "{OUTDIR}/{EXPT_SAMPLE}/runs.txt"
-    wildcard_constraints:
-        EXPT_SAMPLE = EXPT_SAMPLE_REGEX
+        SAMPLE_RUNS = "{OUTDIR}/{EXPT}/{SAMPLE}/pod5.txt"
+    resources:
+        mem_mb=4000, 
+        mem_mib=4000,
+        disk_mb=0, 
+        disk_mib=0
     run:
         #Build outdirs for each sample, based on ONT input file structure (`.../EXPT/SAMPLE`)
-        shell(
-            f"""
-            echo {input.POD5_FILES} > {output.SAMPLE_RUNS}
-            """
-        )
+        # POD5_FILES = glob.glob(f"{IN_DIR}/{wildcards.EXPT_SAMPLE}/*/pod5_pass/*.pod5".replace(" ",""))
+        print(output.SAMPLE_RUNS[1])
+        with open(output.SAMPLE_RUNS, 'w') as f:
+            f.writelines(
+                [s + '\n' for s in input.POD5_LIST]
+            )
 
 include: "rules/1a_guppy.smk"
 include: "rules/1b_dorado.smk"
