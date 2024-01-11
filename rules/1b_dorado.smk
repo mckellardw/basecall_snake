@@ -14,22 +14,19 @@
 # run basecallling on each run
 #TODO- optionally, modify to run on individual pod5 files?
 #TODO- split into multiple rules to shorten per-rule runtime (slurm!)
-#TODO- make {MODEL} a wildcard somehow...
-#TODO- add a check for input pod5 files/dirs
 rule basecall_DORADO:
     input:        
         DIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
         POD5_DIRS = lambda wildcards: POD5_DIRS[f"{wildcards.EXPT}/{wildcards.SAMPLE}".replace(" ","")]
     output:
-        BAM = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/unaligned.bam",
-        POD5_LIST = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/pod5_list.txt"
+        BAM = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/unaligned.bam"
     params:
         MIN_Q_SCORE=8,
-        # MODELS = MODELS_DICT.keys(),
         CUDA_DEVICE = "cuda:all"
         # CUDA_DEVICE = "cpu"
     wildcard_constraints:
-        EXPT_SAMPLE = EXPT_SAMPLE_REGEX,
+        EXPT = EXPT_SAMPLE_REGEX,
+        SAMPLE = EXPT_SAMPLE_REGEX,
         MODEL=MODEL_REGEX,
         IN_DIR=IN_DIR,
         OUTDIR=OUTDIR
@@ -54,9 +51,6 @@ rule basecall_DORADO:
             )
             shell(
                 f"""
-                touch {output.POD5_LIST}
-                echo {input.POD5_DIRS} >> {output.POD5_LIST}
-
                 {EXEC['DORADO']} basecaller \
                     --recursive \
                     --verbose \
@@ -76,8 +70,27 @@ rule basecall_DORADO:
                 {tmpdir}/*.bam
             """
         )
-        
 
+# Write a list of runs used in basecalling
+rule list_input_runs_DORADO:
+    input:        
+        DIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
+        POD5_DIRS = lambda wildcards: POD5_DIRS[f"{wildcards.EXPT}/{wildcards.SAMPLE}".replace(" ","")]
+    output:
+        POD5_LIST = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/pod5_list.txt"
+    params:
+    wildcard_constraints:
+        EXPT = EXPT_SAMPLE_REGEX,
+        SAMPLE = EXPT_SAMPLE_REGEX,
+        MODEL=MODEL_REGEX,
+        IN_DIR=IN_DIR,
+        OUTDIR=OUTDIR
+    run:
+        print(output.POD5_DIRS[1])
+        with open(output.POD5_DIRS, 'w') as f:
+            f.writelines(
+                [s + '\n' for s in input.POD5_LIST]
+            )
 
 # gzip all of the basecalled fastqs
 # rule merge_runs:
