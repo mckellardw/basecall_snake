@@ -37,7 +37,7 @@ EXPT_SAMPLE_LIST=[f"{EXPT}/{SAMPLE}".replace(" ","") for EXPT, SAMPLES in EXPTS.
 POD5_DIRS = {}
 POD5_FILES = {}
 for ES in EXPT_SAMPLE_LIST:
-    POD5_DIRS[ES]  = glob.glob(f"{IN_DIR}/{ES}/*/pod5_pass".replace(" ",""))
+    POD5_DIRS[ES]  = glob.glob(f"{IN_DIR}/{ES}/*/pod5_pass/".replace(" ",""))
     POD5_FILES[ES] = glob.glob(f"{IN_DIR}/{ES}/*/pod5_pass/*.pod5".replace(" ",""))
 
 # EXPT_SAMPLE_REGEX=r"^E[\d]+\/[-\w]+$"
@@ -52,54 +52,6 @@ MODEL_REGEX=r"[-\w]+"
 EXEC = config['EXEC']
 
 ########################################################################################################
-# Troubleshooting
-########################################################################################################
-
-#Pre-flight check for pod5 directories:
-# for ES in EXPT_SAMPLE_LIST:
-#     print(f">>>> {ES}")
-#     print(glob.glob(f"{IN_DIR}/{ES}/*/pod5_pass/".replace(" ","")))
-
-# for ES in EXPT_SAMPLE_LIST:
-#     print(ES)
-#     print(
-#         re.search(EXPT_SAMPLE_REGEX, ES)
-#     )
-
-# print([f"{OUTDIR}/{e}/{s}".replace(" ","") for e in EXPTS for s in EXPTS[e]])
-
-# print(
-#     expand( # Dorado unaligned .bam outputs
-#             "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/{FILES}",
-#             OUTDIR = config['OUTDIR'],
-#             EXPT_SAMPLE = EXPT_SAMPLE_LIST,
-#             MODEL = MODELS_DICT.keys(),
-#             FILES = ['unaligned.bam','pod5_list.txt']
-#         )
-# )
-# print(
-#     [
-#             f"{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/{FILE}".replace(" ","") for EXPT in EXPTS for SAMPLE in EXPTS[EXPT] for MODEL in MODELS_DICT.keys() for FILE in ['unaligned.bam','pod5_list.txt']
-#     ]
-# )
-# print(
-#     expand( # Guppy outputs [PLACEHOLDER]
-#             "{OUTDIR}/{EXPT_SAMPLE}/guppy/{MODEL}/{FILES}",
-#             OUTDIR = config['OUTDIR'],
-#             EXPT_SAMPLE = EXPT_SAMPLE_LIST,
-#             MODEL = MODELS_DICT.keys(),
-#             FILES = ['pod5_list.txt']
-#         )
-# )
-# print(
-#     expand( # sample run info
-#             "{OUTDIR}/{EXPT_SAMPLE}/runs.txt",
-#             OUTDIR = config['OUTDIR'],
-#             EXPT_SAMPLE = EXPT_SAMPLE_LIST
-#         )
-# )
-
-########################################################################################################
 # Pipeline
 ########################################################################################################
 
@@ -111,8 +63,8 @@ rule all:
             EXPT_SAMPLE = EXPT_SAMPLE_LIST,
             # EXPT_SAMPLE = [f"{EXPT}/{SAMPLE}".replace(" ","") for EXPT, SAMPLES in EXPTS.items() for SAMPLE in SAMPLES],
             MODEL = MODELS_DICT.keys(),
-            FILE = ['unaligned.bam','pod5_list.txt']
-        ),
+            FILE = ['unaligned.bam']
+        ), # ,'pod5_list.txt'
         # expand( # Guppy outputs [PLACEHOLDER]
         #     "{OUTDIR}/{EXPT_SAMPLE}/guppy/{MODEL}/{FILES}",
         #     OUTDIR = config['OUTDIR'],

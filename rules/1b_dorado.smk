@@ -20,6 +20,8 @@ rule list_input_runs_DORADO:
     output:
         POD5_LIST = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/pod5_list.txt"
     params:
+    resources:
+
     wildcard_constraints:
         EXPT = EXPT_SAMPLE_REGEX,
         SAMPLE = EXPT_SAMPLE_REGEX,
@@ -27,10 +29,9 @@ rule list_input_runs_DORADO:
         IN_DIR = IN_DIR,
         OUTDIR = OUTDIR
     run:
-        print(output.POD5_DIRS[1])
-        with open(output.POD5_DIRS, 'w') as f:
+        with open(output.POD5_LIST, 'w') as f:
             f.writelines(
-                [f"{s}\n" for s in input.POD5_LIST]
+                [f"{s}\n" for s in input.POD5_DIRS]
             )
 
 # run basecallling on each run
@@ -67,7 +68,7 @@ rule basecall_DORADO:
         
         # run basecalling on each individual run - just on 
         for POD5_DIR in input.POD5_DIRS:
-            current_run = POD5_DIR.rsplit("/")[-1]
+            current_run = POD5_DIR.rsplit("/")[-2]
             print(
                 f"Basecalling on run {current_run}..."
             )

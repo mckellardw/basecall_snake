@@ -19,9 +19,10 @@ module load cuda/11.3.1 -->
 ## Run w/ slurm:
 ```
 snakemake --cluster-config slurm_config.yml \
---cluster "sbatch --mail-type {cluster.mail-type} --mail-user {cluster.mail-user} -p {cluster.partition} -t {cluster.time} -N {cluster.nodes} --mem {cluster.mem} -D {cluster.chdir} --output={cluster.output} --gres=gpu:1" \
--j 8
+--cluster "sbatch --mail-type {cluster.mail-type} --mail-user {cluster.mail-user} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} -D {cluster.chdir} --output={cluster.output} --gres=gpu:2" \
+-j 8 -k
 ```
+-N {cluster.nodes}
 
 ## Run w/out slurm:
 ```

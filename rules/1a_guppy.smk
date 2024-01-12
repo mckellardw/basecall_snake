@@ -14,6 +14,8 @@ rule basecall_GUPPY:
         OUTDIR=OUTDIR
     params:
         MIN_Q_SCORE=8
+    log:
+        "{OUTDIR}/{EXPT}/{SAMPLE}/guppy/{MODEL}/basecaller.log"
     run:
         shell(
             f"""
