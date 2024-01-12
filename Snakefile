@@ -41,10 +41,10 @@ for ES in EXPT_SAMPLE_LIST:
     POD5_FILES[ES] = glob.glob(f"{IN_DIR}/{ES}/*/pod5_pass/*.pod5".replace(" ",""))
 
 # EXPT_SAMPLE_REGEX=r"^E[\d]+\/[-\w]+$"
-EXPT_SAMPLE_REGEX=r"^[-\w]+$"
+EXPT_SAMPLE_REGEX=r"[-\w]+"
 
 # MODEL_REGEX=r"sup"
-MODEL_REGEX=r"^[-\w]+$"
+MODEL_REGEX=r"[-\w]+"
 
 ########################################################################################################
 # Executables
@@ -68,20 +68,20 @@ EXEC = config['EXEC']
 
 # print([f"{OUTDIR}/{e}/{s}".replace(" ","") for e in EXPTS for s in EXPTS[e]])
 
-print(
-    expand( # Dorado unaligned .bam outputs
-            "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/{FILES}",
-            OUTDIR = config['OUTDIR'],
-            EXPT_SAMPLE = EXPT_SAMPLE_LIST,
-            MODEL = MODELS_DICT.keys(),
-            FILES = ['unaligned.bam','pod5_list.txt']
-        )
-)
-print(
-    [
-            f"{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/{FILE}".replace(" ","") for EXPT in EXPTS for SAMPLE in EXPTS[EXPT] for MODEL in MODELS_DICT.keys() for FILE in ['unaligned.bam','pod5_list.txt']
-    ]
-)
+# print(
+#     expand( # Dorado unaligned .bam outputs
+#             "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/{FILES}",
+#             OUTDIR = config['OUTDIR'],
+#             EXPT_SAMPLE = EXPT_SAMPLE_LIST,
+#             MODEL = MODELS_DICT.keys(),
+#             FILES = ['unaligned.bam','pod5_list.txt']
+#         )
+# )
+# print(
+#     [
+#             f"{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/{FILE}".replace(" ","") for EXPT in EXPTS for SAMPLE in EXPTS[EXPT] for MODEL in MODELS_DICT.keys() for FILE in ['unaligned.bam','pod5_list.txt']
+#     ]
+# )
 # print(
 #     expand( # Guppy outputs [PLACEHOLDER]
 #             "{OUTDIR}/{EXPT_SAMPLE}/guppy/{MODEL}/{FILES}",
@@ -105,16 +105,14 @@ print(
 
 rule all:
     input:
-        # expand( # Dorado unaligned .bam outputs
-        #     "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/{FILE}",
-        #     OUTDIR = config['OUTDIR'],
-        #     EXPT_SAMPLE = EXPT_SAMPLE_LIST,
-        #     MODEL = MODELS_DICT.keys(),
-        #     FILE = ['unaligned.bam','pod5_list.txt']
-        # ),
-        [
-            f"{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/{FILE}".replace(" ","") for EXPT in EXPTS for SAMPLE in EXPTS[EXPT] for MODEL in MODELS_DICT.keys() for FILE in ['unaligned.bam','pod5_list.txt']
-        ],
+        expand( # Dorado unaligned .bam outputs
+            "{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/{FILE}",
+            OUTDIR = config['OUTDIR'],
+            EXPT_SAMPLE = EXPT_SAMPLE_LIST,
+            # EXPT_SAMPLE = [f"{EXPT}/{SAMPLE}".replace(" ","") for EXPT, SAMPLES in EXPTS.items() for SAMPLE in SAMPLES],
+            MODEL = MODELS_DICT.keys(),
+            FILE = ['unaligned.bam','pod5_list.txt']
+        ),
         # expand( # Guppy outputs [PLACEHOLDER]
         #     "{OUTDIR}/{EXPT_SAMPLE}/guppy/{MODEL}/{FILES}",
         #     OUTDIR = config['OUTDIR'],
@@ -131,20 +129,20 @@ rule all:
         OUTDIR=OUTDIR
 
 # Initialize sample output directories
-rule build_sample_dirs:
-    output:
-        DIR = directory("{OUTDIR}/{EXPT}/{SAMPLE}")
-    wildcard_constraints:
-        EXPT = EXPT_SAMPLE_REGEX,
-        SAMPLE = EXPT_SAMPLE_REGEX,
-        OUTDIR=OUTDIR
-    run:
-        #Build outdirs for each sample, based on ONT input file structure (`.../EXPT/SAMPLE`)
-        shell(
-            f"""
-            mkdir -p {output.DIR}
-            """
-        )
+# rule build_sample_dirs:
+#     output:
+#         DIR = directory("{OUTDIR}/{EXPT}/{SAMPLE}")
+#     wildcard_constraints:
+#         EXPT = EXPT_SAMPLE_REGEX,
+#         SAMPLE = EXPT_SAMPLE_REGEX,
+#         OUTDIR=OUTDIR
+#     run:
+#         #Build outdirs for each sample, based on ONT input file structure (`.../EXPT/SAMPLE`)
+#         shell(
+#             f"""
+#             mkdir -p {output.DIR}
+#             """
+#         )
 
 # Write .pod5 file list used for each sample
 rule list_sample_runs:
@@ -159,8 +157,8 @@ rule list_sample_runs:
         disk_mb=0, 
         disk_mib=0
     wildcard_constraints:
-        # EXPT = EXPT_SAMPLE_REGEX,
-        # SAMPLE = EXPT_SAMPLE_REGEX,
+        EXPT = EXPT_SAMPLE_REGEX,
+        SAMPLE = EXPT_SAMPLE_REGEX,
         OUTDIR=OUTDIR
     run:
         #Build outdirs for each sample, based on ONT input file structure (`.../EXPT/SAMPLE`)

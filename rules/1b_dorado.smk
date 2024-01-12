@@ -1,15 +1,37 @@
-#TODO? download dorado models
+# download dorado models
 # rule download_models:
 #     output:
-#         MODELS = "resources/dorado_models/{MODEL}"
+#        MODELS = expand("{MODEL}", MODEL=MODELS_DICT.values()
 #     run:
-        
+#        
 #         shell(
 #             f"""
 #             {EXEC["DORADO"]} download \
 #             --directory resources/dorado_models
 #             """
 #         )
+
+
+# Write a list of runs used in basecalling
+rule list_input_runs_DORADO:
+    input:        
+        DIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
+        POD5_DIRS = lambda wildcards: POD5_DIRS[f"{wildcards.EXPT}/{wildcards.SAMPLE}".replace(" ","")]
+    output:
+        POD5_LIST = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/pod5_list.txt"
+    params:
+    wildcard_constraints:
+        EXPT = EXPT_SAMPLE_REGEX,
+        SAMPLE = EXPT_SAMPLE_REGEX,
+        MODEL = MODEL_REGEX,
+        IN_DIR = IN_DIR,
+        OUTDIR = OUTDIR
+    run:
+        print(output.POD5_DIRS[1])
+        with open(output.POD5_DIRS, 'w') as f:
+            f.writelines(
+                [f"{s}\n" for s in input.POD5_LIST]
+            )
 
 # run basecallling on each run
 #TODO- optionally, modify to run on individual pod5 files?
@@ -25,15 +47,15 @@ rule basecall_DORADO:
         CUDA_DEVICE = "cuda:all"
         # CUDA_DEVICE = "cpu"
     wildcard_constraints:
-        EXPT = EXPT_SAMPLE_REGEX,
-        SAMPLE = EXPT_SAMPLE_REGEX,
+        # EXPT = EXPT_SAMPLE_REGEX,
+        # SAMPLE = EXPT_SAMPLE_REGEX,
         MODEL=MODEL_REGEX,
         IN_DIR=IN_DIR,
         OUTDIR=OUTDIR
     log:
         "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/basecaller.log"
-    benchmark:
-        "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/basecaller_benchmark.txt"
+    # benchmark:
+    #     "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/basecaller_benchmark.txt"
     run:
         tmpdir = f"{input.DIR}/dorado/{wildcards.MODEL}/tmp".replace(" ", "")
 
@@ -63,46 +85,18 @@ rule basecall_DORADO:
                 """
             )
 
-        shell(
-            f"""
-            {EXEC["SAMTOOLS"]} cat \
-                -o {output.BAM} \
-                {tmpdir}/*.bam
-            """
-        )
-
-# Write a list of runs used in basecalling
-rule list_input_runs_DORADO:
-    input:        
-        DIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
-        POD5_DIRS = lambda wildcards: POD5_DIRS[f"{wildcards.EXPT}/{wildcards.SAMPLE}".replace(" ","")]
-    output:
-        POD5_LIST = "{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/pod5_list.txt"
-    params:
-    wildcard_constraints:
-        EXPT = EXPT_SAMPLE_REGEX,
-        SAMPLE = EXPT_SAMPLE_REGEX,
-        MODEL=MODEL_REGEX,
-        IN_DIR=IN_DIR,
-        OUTDIR=OUTDIR
-    run:
-        print(output.POD5_DIRS[1])
-        with open(output.POD5_DIRS, 'w') as f:
-            f.writelines(
-                [s + '\n' for s in input.POD5_LIST]
+        # merge output .bams
+        if len(input.POD5_DIRS) > 1:
+            shell(
+                f"""
+                {EXEC["SAMTOOLS"]} cat \
+                    -o {output.BAM} \
+                    {tmpdir}/*.bam
+                """
             )
-
-# gzip all of the basecalled fastqs
-# rule merge_runs:
-#     input:
-#         BAMS = []
-#     output:
-#         BAM = f"{OUTDIR}/{EXPT_SAMPLE}/dorado/{MODEL}/unaligned.bam"
-#     threads:
-#         config['nTHREADS']
-#     run:
-#         shell(
-#             f"""
-#             {EXEC["SAMTOOLS"]} merge
-#             """
-#         )
+        else:
+            shell(
+                f"""
+                mv {tmpdir}/{input.POD5_DIRS[0]}.bam {output.BAM}                    
+                """
+            )
