@@ -16,8 +16,3 @@ basecall_DORADO:
     time: 00-8:00:00
     mem: 8G
     gres: gpu:1
-
-list_sample_runs:
-    partition: pe2
-    time: 00-1:00:00
-    mem: 4G

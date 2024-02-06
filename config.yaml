@@ -3,15 +3,14 @@
 # module load dorado
 
 # Input directories
-IN_DIR: /gpfs/commons/groups/innovation/dwm/DATA/ont
-OUTDIR: /gpfs/commons/groups/innovation/dwm/DATA/ont_recalled
+IN_DIR: /gpfs/commons/groups/vickovic_lab/rhe/projects/012/nanopore_data_processing/data/test_data
+OUTDIR: /gpfs/commons/groups/vickovic_lab/rhe/projects/012/nanopore_data_processing/basecalling_test/basecall_snake/test_020224
 
 # Experiments
 ## ex: EXPERIMENT_A: [sample1, sample2, sample3]
 ## pION 
 EXPTS:
-  E031: [C1_1mer, C1_1mer_2, D1_1mer, D1_1mer_2]
-  E034: [D2_15mer]
+  E031: [C1_1mer, C1_1mer_2]
 
 ## mION
 # EXPTS:
@@ -19,12 +18,13 @@ EXPTS:
 
 # Filepath(s) to the dorado models needed
 MODELS:
-  sup: resources/dorado_models/dna_r10.4.1_e8.2_400bps_sup@v4.3.0
+  sup: /gpfs/commons/groups/vickovic_lab/rhe/projects/012/nanopore_data_processing/basecalling_test/models/dna_r10.4.1_e8.2_400bps_sup@v4.3.0
   # hac: resources/dorado_models/dna_r10.4.1_e8.2_400bps_hac@v4.3.0
   # fast: resources/dorado_models/dna_r10.4.1_e8.2_400bps_fast@v4.3.0
 
-# Run settings
-THREADS: 4
+## Run settings
+# No. cpu threads
+THREADS: 8
 
 # Executables
 EXEC:
