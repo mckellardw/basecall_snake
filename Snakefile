@@ -24,8 +24,6 @@ import itertools
 IN_DIR = config['IN_DIR'].replace(" ","")
 OUTDIR = config['OUTDIR'].replace(" ","")
 
-THREADS = config['THREADS']
-
 ########################################################################################################
 # Variables and references
 ########################################################################################################
@@ -55,6 +53,8 @@ EXEC = config['EXEC']
 # Pipeline
 ########################################################################################################
 
+localrules: list_sample_runs
+
 rule all:
     input:
         expand( # Dorado unaligned .bam outputs
@@ -80,41 +80,22 @@ rule all:
         SAMPLE = EXPT_SAMPLE_REGEX,
         OUTDIR=OUTDIR
 
-# Initialize sample output directories
-# rule build_sample_dirs:
-#     output:
-#         DIR = directory("{OUTDIR}/{EXPT}/{SAMPLE}")
-#     wildcard_constraints:
-#         EXPT = EXPT_SAMPLE_REGEX,
-#         SAMPLE = EXPT_SAMPLE_REGEX,
-#         OUTDIR=OUTDIR
-#     run:
-#         #Build outdirs for each sample, based on ONT input file structure (`.../EXPT/SAMPLE`)
-#         shell(
-#             f"""
-#             mkdir -p {output.DIR}
-#             """
-#         )
-
 # Write .pod5 file list used for each sample
 rule list_sample_runs:
     input:
-        DIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
         POD5_LIST = lambda wildcards: POD5_FILES[f"{wildcards.EXPT}/{wildcards.SAMPLE}".replace(" ","")]
     output:
         SAMPLE_RUNS = "{OUTDIR}/{EXPT}/{SAMPLE}/pod5.txt"
     resources:
-        mem_mb=4000, 
+        mem_mb=4000,
         mem_mib=4000,
         disk_mb=0, 
         disk_mib=0
     wildcard_constraints:
         EXPT = EXPT_SAMPLE_REGEX,
         SAMPLE = EXPT_SAMPLE_REGEX,
-        OUTDIR=OUTDIR
+        OUTDIR = OUTDIR
     run:
-        #Build outdirs for each sample, based on ONT input file structure (`.../EXPT/SAMPLE`)
-        # POD5_FILES = glob.glob(f"{IN_DIR}/{wildcards.EXPT_SAMPLE}/*/pod5_pass/*.pod5".replace(" ",""))
         print(output.SAMPLE_RUNS[1])
         with open(output.SAMPLE_RUNS, 'w') as f:
             f.writelines(

@@ -19,10 +19,11 @@ module load cuda/11.3.1 -->
 ## Run w/ slurm:
 ```
 snakemake --cluster-config slurm_config.yml \
---cluster "sbatch --mail-type {cluster.mail-type} --mail-user {cluster.mail-user} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} -D {cluster.chdir} --output={cluster.output} --gres=gpu:2" \
--j 8 -k
+--cluster "sbatch --mail-type {cluster.mail-type} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} -D {cluster.chdir} --output={cluster.output} --gres={cluster.gres}" --cluster-cancel \
+-j 4 -k --local-cores 8
 ```
--N {cluster.nodes}
+
+Note: in cluster execution `-j` controls the number of parallel gpu jobs that will be used to run basecalling, while `--local-cores` controls the number of local cpu threads that will be used for other tasks
 
 ## Run w/out slurm:
 ```
