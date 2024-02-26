@@ -4,7 +4,7 @@
 
 # Input directories
 IN_DIR: /gpfs/commons/groups/vickovic_lab/rhe/projects/012/nanopore_data_processing/data/test_data
-OUTDIR: /gpfs/commons/groups/vickovic_lab/rhe/projects/012/nanopore_data_processing/basecalling_test/basecall_snake/test_020224
+OUTDIR: /gpfs/commons/groups/vickovic_lab/rhe/projects/012/nanopore_data_processing/basecalling_test/basecall_snake/test_230224
 
 # Experiments
 ## ex: EXPERIMENT_A: [sample1, sample2, sample3]

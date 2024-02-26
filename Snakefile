@@ -53,7 +53,7 @@ EXEC = config['EXEC']
 # Pipeline
 ########################################################################################################
 
-localrules: list_sample_runs
+localrules: all
 
 rule all:
     input:
@@ -78,7 +78,7 @@ rule all:
     wildcard_constraints:
         EXPT = EXPT_SAMPLE_REGEX,
         SAMPLE = EXPT_SAMPLE_REGEX,
-        OUTDIR=OUTDIR
+        OUTDIR = OUTDIR
 
 # Write .pod5 file list used for each sample
 rule list_sample_runs:
@@ -102,5 +102,23 @@ rule list_sample_runs:
                 [s + '\n' for s in input.POD5_LIST]
             )
 
+# split .pod5 files in each sample to chunks of fixed size
+'''
+rule split_pod5:
+    input:
+        POD5_DIRS = lambda wildcards: POD5_DIRS[f"{wildcards.EXPT}/{wildcards.SAMPLE}".replace(" ","")]
+    output:
+        temp("{OUTDIR}/{EXPT}/{SAMPLE}/.done")
+    wildcard_constraints:
+        EXPT = EXPT_SAMPLE_REGEX,
+        SAMPLE = EXPT_SAMPLE_REGEX,
+        MODEL = MODEL_REGEX,
+        IN_DIR = IN_DIR,
+        OUTDIR = OUTDIR
+    params:
+        SIZE = 10
+    run:
+        shell(f"""python -u scripts/py/split_pod5s.py {params.SIZE} {' '.join([d for d in POD5_DIRS])}""")
+'''
 include: "rules/1a_guppy.smk"
 include: "rules/1b_dorado.smk"
