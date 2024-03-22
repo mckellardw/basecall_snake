@@ -7,6 +7,8 @@
 
 module load samtools
 module load dorado
+module load nanoppolish
 source activate basecalling
 
-sbatch snakemake --cluster-config slurm_config.yml --cluster "sbatch --mail-type {cluster.mail-type} --mail-user {cluster.mail-user} -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} -D {cluster.chdir} --output={cluster.output} --gres={cluster.gres}" -k --cluster-cancel scancel --local-cores 8 -j 4
+#sbatch snakemake --cluster-config slurm_config.yml --cluster "sbatch -p {cluster.partition} -t {cluster.time} --mem {cluster.mem} --output={cluster.output} --gres={cluster.gres}" -k --cluster-cancel scancel --local-cores 8 -j 4
+sbatch snakemake --profile profiles/slurm -j 4 -k --local-cores 8

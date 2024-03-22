@@ -23,6 +23,10 @@ snakemake --cluster-config slurm_config.yml \
 -j 4 -k --local-cores 8
 ```
 
+```
+snakemake --profile profiles/slurm -j 4 -k --local-cores 8
+```
+
 Note: in cluster execution `-j` controls the number of parallel gpu jobs that will be used to run basecalling, while `--local-cores` controls the number of local cpu threads that will be used for other tasks
 
 ## Run w/out slurm:
