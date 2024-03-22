@@ -48,6 +48,7 @@ MODEL_REGEX=r"[-\w]+"
 # Executables
 ########################################################################################################
 EXEC = config['EXEC']
+UTIL = config['UTIL']
 
 ########################################################################################################
 # Pipeline
@@ -120,5 +121,18 @@ rule split_pod5:
     run:
         shell(f"""python -u scripts/py/split_pod5s.py {params.SIZE} {' '.join([d for d in POD5_DIRS])}""")
 '''
+
+rule bam_to_fastq:
+    input:
+        BAM="{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/unaligned.bam"
+    output:
+        FASTQ="{OUTDIR}/{EXPT}/{SAMPLE}/dorado/{MODEL}/unaligned.fastq"
+    run:
+        shell(
+          """
+              samtools fastq {input.BAM} > {output.FASTQ}
+          """
+        )
+
 include: "rules/1a_guppy.smk"
 include: "rules/1b_dorado.smk"

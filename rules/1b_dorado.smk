@@ -40,7 +40,8 @@ rule basecall_DORADO:
     params:
         MIN_Q_SCORE=8,
         CUDA_DEVICE = "cuda:all",
-        OUTDIR = "{OUTDIR}/{EXPT}/{SAMPLE}"
+        OUTDIR = "{OUTDIR}/{EXPT}/{SAMPLE}",
+        MODCALL = config['MODS']
     wildcard_constraints:
         MODEL=MODEL_REGEX,
         IN_DIR=IN_DIR,
@@ -53,7 +54,7 @@ rule basecall_DORADO:
         partition="gpu",
         time="00-8:00:00",
         mem="8G",
-        slurm="gres=gpu:1"
+        slurm_extra="--gres=gpu:1"
     run:
         tmpdir = f"{params.OUTDIR}/dorado/{wildcards.MODEL}/tmp".replace(" ", "")
 
@@ -63,7 +64,13 @@ rule basecall_DORADO:
             """
         )
         
-        # run basecalling on each individual run - just on 
+        # If we're interested in m6a calling, add option to dorado
+        if 'm6a' in {params.MODCALL}:
+            mods='--modified-bases m6A_DRACH'
+        else:
+            mods=''
+
+        # run basecalling on each individual run 
         for POD5_DIR in input.POD5_DIRS:
             current_run = POD5_DIR.rsplit("/")[-3]
             print(
@@ -75,7 +82,9 @@ rule basecall_DORADO:
                     --recursive \
                     --verbose \
                     --device {params.CUDA_DEVICE} \
+                    {mods} \
                     --no-trim \
+                    --emit-moves \
                     --min-qscore {params.MIN_Q_SCORE} \
                     {MODELS_DICT[wildcards.MODEL]} {POD5_DIR} \
                     > {tmpdir}/{current_run}.bam \
@@ -83,14 +92,21 @@ rule basecall_DORADO:
                 """
             )
         
-        # merge output files
-        shell(
-            f"""
-            {EXEC["SAMTOOLS"]} cat \
-                -o {output.BAM} \
-                {tmpdir}/*.bam
-            """
-        )
+            # merge output files
+            if len(input.POD5_DIRS) > 1:
+                shell(
+                    f"""
+                    {EXEC["SAMTOOLS"]} cat \
+                        -o {output.BAM} \
+                        {tmpdir}/*.bam
+                    """
+                )
+            else:
+                shell(
+                  f"""
+                  mv {tmpdir}/{current_run}.bam {output.BAM}
+                  """
+                )
 
 # merge unaligned bams across chunks
 '''
